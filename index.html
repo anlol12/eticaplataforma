@@ -297,7 +297,6 @@
         <div class="flex gap-2 lg:ml-auto">
           <button class="btn-secondary" onclick="exportCSV()">Exportar .CSV</button>
           <button class="btn-secondary" onclick="exportJSON()">Exportar .JSON</button>
-          <button class="btn-primary" onclick="openContractForm()">+ Registrar contrato</button>
         </div>
       </div>
     </div>
@@ -416,73 +415,6 @@
 <!-- ===== MODAL: EXPEDIENTE DE CONTRATO ===== -->
 <div class="modal-backdrop" id="modalExpediente">
   <div class="modal-box p-6" id="modalExpedienteBody"></div>
-</div>
-
-<!-- ===== MODAL: REGISTRAR CONTRATO ===== -->
-<div class="modal-backdrop" id="modalForm">
-  <div class="modal-box p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="font-bold text-lg">Registrar nuevo contrato</h3>
-      <button onclick="closeModal('modalForm')" class="text-slate-400 hover:text-slate-700">✕</button>
-    </div>
-    <form id="contractForm" class="space-y-3">
-      <div>
-        <label class="text-[12.5px] font-medium text-slate-600">Nombre del proyecto</label>
-        <input type="text" id="fNombre" required>
-      </div>
-      <div class="grid sm:grid-cols-2 gap-3">
-        <div>
-          <label class="text-[12.5px] font-medium text-slate-600">Institución</label>
-          <select id="fInstitucion" required>
-            <option>Ministerio de Obras Públicas</option>
-            <option>Ministerio de Educación</option>
-            <option>Ministerio de Salud</option>
-            <option>ANDA</option>
-            <option>Corte de Cuentas</option>
-            <option>Alcaldía de San Miguel</option>
-            <option>Alcaldía de San Salvador</option>
-          </select>
-        </div>
-        <div>
-          <label class="text-[12.5px] font-medium text-slate-600">Estado</label>
-          <select id="fEstado" required>
-            <option>En Licitación</option>
-            <option>Adjudicado</option>
-            <option>Ejecución</option>
-            <option>Finalizado</option>
-          </select>
-        </div>
-      </div>
-      <div class="grid sm:grid-cols-2 gap-3">
-        <div>
-          <label class="text-[12.5px] font-medium text-slate-600">Empresa adjudicada</label>
-          <input type="text" id="fEmpresa" required>
-        </div>
-        <div>
-          <label class="text-[12.5px] font-medium text-slate-600">NIT</label>
-          <input type="text" id="fNit" placeholder="0000-000000-000-0" required>
-        </div>
-      </div>
-      <div class="grid sm:grid-cols-2 gap-3">
-        <div>
-          <label class="text-[12.5px] font-medium text-slate-600">Representante legal</label>
-          <input type="text" id="fRepresentante" required>
-        </div>
-        <div>
-          <label class="text-[12.5px] font-medium text-slate-600">Monto (USD)</label>
-          <input type="text" id="fMonto" placeholder="250000" required>
-        </div>
-      </div>
-      <div>
-        <label class="text-[12.5px] font-medium text-slate-600">Código de licitación</label>
-        <input type="text" id="fLicitacion" placeholder="LP-XXX-000-2026" required>
-      </div>
-      <div class="flex justify-end gap-2 pt-2">
-        <button type="button" class="btn-secondary" onclick="closeModal('modalForm')">Cancelar</button>
-        <button type="submit" class="btn-primary">Guardar contrato</button>
-      </div>
-    </form>
-  </div>
 </div>
 
 <!-- ===== MODAL: PREGUNTAS ===== -->
@@ -887,27 +819,6 @@ function openExpediente(licitacion) {
     </div>`;
   openModal('modalExpediente');
 }
-
-function openContractForm() { openModal('modalForm'); }
-document.getElementById('contractForm').addEventListener('submit', e => {
-  e.preventDefault();
-  const monto = parseFloat(document.getElementById('fMonto').value) || 0;
-  contratos.push({
-    nombre: document.getElementById('fNombre').value,
-    institucion: document.getElementById('fInstitucion').value,
-    empresa: document.getElementById('fEmpresa').value,
-    nit: document.getElementById('fNit').value,
-    representante: document.getElementById('fRepresentante').value,
-    monto, estado: document.getElementById('fEstado').value,
-    licitacion: document.getElementById('fLicitacion').value,
-    adendas: 0,
-  });
-  e.target.reset();
-  closeModal('modalForm');
-  populateInstituciones();
-  renderContratos();
-  toast('Contrato registrado correctamente.');
-});
 
 function toCSV(list) {
   const headers = ['Nombre','Institucion','Empresa','NIT','Representante','Monto','Estado','Licitacion','Adendas'];
