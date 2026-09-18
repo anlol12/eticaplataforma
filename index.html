@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plataforma de Transparencia Pública</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0b1526;
+    --navy-2:#101f38;
+    --blue:#1d4ed8;
+    --blue-light:#3b82f6;
+    --green:#15803d;
+    --green-light:#dcfce7;
+    --amber:#b45309;
+    --amber-light:#fef3c7;
+    --amber-solid:#f59e0b;
+    --paper:#f4f6f9;
+    --line:#d7dde5;
+    --ink:#101828;
+    --ink-soft:#4b5768;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ scroll-behavior:smooth; }
+  body{
+    font-family:'Public Sans', ui-sans-serif, system-ui, sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  .mono{ font-family:'IBM Plex Mono', ui-monospace, monospace; }
+  .seal{
+    width:44px; height:44px; border-radius:9999px;
+    border:2px solid rgba(255,255,255,.35);
+    display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(circle at 30% 30%, #1d4ed8, #0b1526 75%);
+  }
+  .tab-btn{
+    position:relative;
+    white-space:nowrap;
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    padding:14px 16px 12px 16px;
+    border-bottom:3px solid transparent;
+    transition:color .18s ease, border-color .18s ease, background-color .18s ease;
+  }
+  .tab-btn:hover{ color:var(--navy); background:#eef1f5; }
+  .tab-btn.active{ color:var(--blue); border-color:var(--blue); background:#eef3ff; }
+  .tab-btn .num{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:18px; height:18px; border-radius:9999px;
+    font-size:10.5px; font-family:'IBM Plex Mono', monospace;
+    background:var(--line); color:var(--ink-soft); margin-right:8px;
+  }
+  .tab-btn.active .num{ background:var(--blue); color:#fff; }
+  .panel{ display:none; }
+  .panel.active{ display:block; animation:fadein .25s ease; }
+  @keyframes fadein{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+  .card{
+    background:#fff; border:1px solid var(--line); border-radius:10px;
+  }
+  .kpi-card{
+    background:#fff; border:1px solid var(--line); border-left:4px solid var(--blue);
+    border-radius:8px; padding:16px 18px;
+  }
+  .divider{ border-top:1px solid var(--line); }
+  .btn-primary{
+    background:var(--blue); color:#fff; font-weight:600; font-size:13.5px;
+    padding:9px 16px; border-radius:7px; transition:background .15s ease;
+  }
+  .btn-primary:hover{ background:#1743ad; }
+  .btn-secondary{
+    background:#fff; color:var(--navy); font-weight:600; font-size:13.5px;
+    padding:9px 16px; border-radius:7px; border:1px solid var(--line);
+    transition:background .15s ease;
+  }
+  .btn-secondary:hover{ background:#eef1f5; }
+  .badge{ font-size:11px; font-weight:600; padding:3px 9px; border-radius:9999px; }
+  .badge-green{ background:var(--green-light); color:var(--green); }
+  .badge-amber{ background:var(--amber-light); color:var(--amber); }
+  .badge-blue{ background:#dbeafe; color:var(--blue); }
+  .badge-gray{ background:#e5e9ee; color:var(--ink-soft); }
+  input[type="text"], select, textarea{
+    border:1px solid var(--line); border-radius:7px; padding:8px 12px; font-size:13.5px;
+    background:#fff; width:100%;
+  }
+  input:focus, select:focus, textarea:focus{ outline:2px solid var(--blue-light); outline-offset:1px; }
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(11,21,38,.55); display:none;
+    align-items:flex-start; justify-content:center; padding:32px 16px; overflow-y:auto; z-index:60;
+  }
+  .modal-backdrop.open{ display:flex; }
+  .modal-box{
+    background:#fff; border-radius:12px; max-width:640px; width:100%;
+    animation:modalIn .18s ease; margin-top:24px;
+  }
+  @keyframes modalIn{ from{opacity:0; transform:translateY(-10px) scale(.98);} to{opacity:1; transform:translateY(0) scale(1);} }
+  .toast{
+    background:var(--navy); color:#fff; padding:11px 18px; border-radius:8px;
+    font-size:13px; font-weight:500; box-shadow:0 8px 24px rgba(0,0,0,.25);
+    display:flex; align-items:center; gap:10px; animation:toastIn .2s ease;
+  }
+  @keyframes toastIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+  table{ border-collapse:collapse; width:100%; }
+  th{ text-align:left; font-size:11.5px; text-transform:none; letter-spacing:.01em; color:var(--ink-soft); font-weight:600; padding:10px 12px; border-bottom:1px solid var(--line); }
+  td{ padding:11px 12px; font-size:13.5px; border-bottom:1px solid #eef1f5; vertical-align:middle; }
+  tr:hover td{ background:#f9fafc; }
+  .timeline-item{ position:relative; padding-left:26px; padding-bottom:22px; }
+  .timeline-item:last-child{ padding-bottom:0; }
+  .timeline-item::before{
+    content:''; position:absolute; left:5px; top:2px; width:11px; height:11px; border-radius:9999px;
+    background:var(--blue); border:2px solid #fff; box-shadow:0 0 0 2px var(--blue);
+  }
+  .timeline-item::after{
+    content:''; position:absolute; left:10px; top:14px; bottom:0; width:1px; background:var(--line);
+  }
+  .timeline-item:last-child::after{ display:none; }
+  ::-webkit-scrollbar{ height:6px; width:6px; }
+  ::-webkit-scrollbar-thumb{ background:#c7cfd8; border-radius:9999px; }
+  .bar-track{ background:#e6eaf0; border-radius:9999px; overflow:hidden; height:14px; }
+  .bar-fill{ height:100%; border-radius:9999px; transition:width .5s ease; }
+  .stage-btn{ flex:1; text-align:left; padding:12px 14px; border-radius:8px; border:1px solid var(--line); background:#fff; transition:all .15s ease; cursor: pointer; }
+  .stage-btn.active{ border-color:var(--blue); background:#eef3ff; }
+  .hint{ font-size:12px; color:#94a3b8; margin-top:8px; display:flex; align-items:center; gap:5px; }
+  #progressBar{ position:sticky; top:0; z-index:39; }
+  #prevTabBtn:disabled, #nextTabBtn:disabled{ opacity:.4; cursor:not-allowed; }
+</style>
+</head>
+<body>
+
+<!-- ENCABEZADO INSTITUCIONAL -->
+<header style="background:linear-gradient(135deg, var(--navy), var(--navy-2));" class="text-white">
+  <div class="max-w-7xl mx-auto px-5 md:px-8 py-5 flex items-center gap-4">
+    <div class="seal">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M12 2l8 4v5c0 5-3.4 8.7-8 10-4.6-1.3-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+    </div>
+    <div class="min-w-0">
+      <p class="text-[11px] tracking-wide text-blue-200/80 font-medium">Estado y Ciudadanía · Prototipo de Gobierno Abierto</p>
+      <h1 class="text-lg md:text-xl font-bold leading-tight truncate">Plataforma de Transparencia Pública</h1>
+    </div>
+    <div class="ml-auto hidden md:flex items-center gap-2 text-[11.5px] text-blue-100/80">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+      Datos de demostración académica
+    </div>
+  </div>
+</header>
+
+<!-- BARRA DE PESTAÑAS -->
+<nav class="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
+  <div class="max-w-7xl mx-auto px-2 md:px-6 flex overflow-x-auto" id="tabBar"></div>
+</nav>
+
+<div id="progressBar" class="bg-blue-50 border-b border-blue-100">
+  <div class="max-w-7xl mx-auto px-5 md:px-8 py-2.5 flex items-center justify-between gap-3">
+    <button id="prevTabBtn" class="btn-secondary text-xs px-3 py-1.5">← Anterior</button>
+    <p class="text-[12.5px] font-semibold text-blue-700 mono" id="progressLabel">Introducción y Marco Ético</p>
+    <button id="nextTabBtn" class="btn-primary text-xs px-3 py-1.5">Siguiente →</button>
+  </div>
+</div>
+
+<main class="max-w-7xl mx-auto px-5 md:px-8 py-8">
+
+  <!-- ===================== TAB 1 ===================== -->
+  <section id="panel-1" class="panel">
+    <div class="mb-6">
+      <p class="badge badge-blue mb-2 inline-block">Sección 1</p>
+      <h2 class="text-2xl font-bold text-slate-900">Introducción y marco ético de la transparencia</h2>
+      <p class="text-slate-600 mt-1 max-w-2xl text-[14.5px]">El dinero que administra el Estado proviene de los impuestos ciudadanos. Rendir cuentas es, por tanto, un deber moral y legal — no una cortesía de la administración[cite: 1].</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5 mb-8">
+      <div class="card p-5">
+        <h3 class="font-semibold text-sm mb-1">Rendición de cuentas</h3>
+        <p class="text-[13px] text-slate-600 leading-relaxed">El poder público no es un cheque en blanco: es un mandato fiduciario sobre recursos ajenos[cite: 1].</p>
+      </div>
+      <div class="card p-5">
+        <h3 class="font-semibold text-sm mb-1">Origen de los fondos</h3>
+        <p class="text-[13px] text-slate-600 leading-relaxed">Cada dólar ejecutado proviene del esfuerzo fiscal colectivo de la sociedad[cite: 1].</p>
+      </div>
+      <div class="card p-5">
+        <h3 class="font-semibold text-sm mb-1">Bien común</h3>
+        <p class="text-[13px] text-slate-600 leading-relaxed">La transparencia activa previene la corrupción y sostiene la justicia distributiva[cite: 1].</p>
+      </div>
+    </div>
+
+    <div class="card p-6">
+      <h3 class="font-semibold mb-1">Comparador: qué se publica frente a qué se protege</h3>
+      <p class="text-[13px] text-slate-500 mb-4">Selecciona una categoría para ver el criterio aplicado.</p>
+      <div class="flex gap-2 mb-5" id="pubPrivToggle">
+        <button data-side="publico" class="stage-btn active flex-1">
+          <span class="font-semibold text-sm">Dato público</span>
+          <p class="text-[12px] text-slate-500 mt-0.5">Gasto y gestión del Estado</p>
+        </button>
+        <button data-side="privado" class="stage-btn flex-1">
+          <span class="font-semibold text-sm">Dato confidencial</span>
+          <p class="text-[12px] text-slate-500 mt-0.5">Ciudadanos y empresas</p>
+        </button>
+      </div>
+      <div id="pubPrivContent" class="bg-slate-50 border border-slate-200 rounded-lg p-5"></div>
+    </div>
+
+    <div class="mt-6 flex flex-wrap gap-3 text-[12.5px] text-slate-500">
+      <span class="badge badge-gray">Base legal: Ley de Acceso a la Información Pública[cite: 1]</span>
+      <span class="badge badge-gray">Base legal: Art. 28, Código Tributario[cite: 1]</span>
+    </div>
+  </section>
+
+  <!-- ===================== TAB 2 ===================== -->
+  <section id="panel-2" class="panel">
+    <div class="mb-6">
+      <p class="badge badge-blue mb-2 inline-block">Módulo 1</p>
+      <h2 class="text-2xl font-bold text-slate-900">Catálogo centralizado de proyectos estatales</h2>
+      <p class="text-slate-600 mt-1 max-w-2xl text-[14.5px]">Visibilizar cada iniciativa evita la duplicidad de obras y la asignación arbitraria de recursos. Haz clic en cada proyecto para desplegar su línea de tiempo de ejecución y comparar lo planificado frente a la ejecución real[cite: 1].</p>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-3 mb-3">
+      <input type="text" id="proyBuscar" placeholder="Buscar proyecto o institución…" class="sm:max-w-xs">
+      <select id="proyFiltro">
+        <option value="todos">Todos los estados</option>
+        <option value="Ejecución">En ejecución</option>
+        <option value="Finalizado">Finalizado</option>
+        <option value="Planificación">En planificación</option>
+      </select>
+    </div>
+    <p class="hint">👉 Haz clic en cualquier tarjeta de proyecto para abrir su línea de tiempo interactiva con desglose de etapas.</p>
+
+    <div id="proyGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4"></div>
+  </section>
+
+  <!-- ===================== TAB 3 ===================== -->
+  <section id="panel-3" class="panel">
+    <div class="mb-6">
+      <p class="badge badge-blue mb-2 inline-block">Módulo 2</p>
+      <h2 class="text-2xl font-bold text-slate-900">Trazabilidad del ciclo presupuestario</h2>
+      <p class="text-slate-600 mt-1 max-w-2xl text-[14.5px]">No basta con planear el gasto: debe mostrarse cómo se mueve cada dólar en cada etapa[cite: 1].</p>
+    </div>
+
+    <div class="card p-6">
+      <p class="hint mb-3">👉 Haz clic en cada etapa para ver su definición y su peso frente al presupuesto votado.</p>
+      <div class="flex flex-col md:flex-row gap-2 mb-6" id="budgetStages"></div>
+      <div id="budgetDetail"></div>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-4 mt-6">
+      <div class="card p-5">
+        <h3 class="font-semibold text-sm mb-1">Especialidad del gasto</h3>
+        <p class="text-[13px] text-slate-600">Los fondos destinados a educación, salud o infraestructura no pueden desviarse a fines no autorizados por ley[cite: 1].</p>
+      </div>
+      <div class="card p-5">
+        <h3 class="font-semibold text-sm mb-1">Cero cajas negras</h3>
+        <p class="text-[13px] text-slate-600">Toda modificación presupuestaria queda visible y justificada ante la ciudadanía[cite: 1].</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== TAB 4 ===================== -->
+  <section id="panel-4" class="panel">
+    <div class="mb-6">
+      <p class="badge badge-blue mb-2 inline-block">Módulo 3</p>
+      <h2 class="text-2xl font-bold text-slate-900">Contratos públicos y licitaciones</h2>
+      <p class="text-slate-600 mt-1 max-w-2xl text-[14.5px]">El área donde históricamente se concentran los mayores riesgos de corrupción estatal[cite: 1].</p>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div class="kpi-card">
+        <p class="text-[11.5px] text-slate-500 font-medium">Contratos activos</p>
+        <p class="text-2xl font-bold mono mt-1" id="kpiActivos">0</p>
+      </div>
+      <div class="kpi-card" style="border-color:var(--green)">
+        <p class="text-[11.5px] text-slate-500 font-medium">Total adjudicado</p>
+        <p class="text-2xl font-bold mono mt-1" id="kpiTotal">$0</p>
+      </div>
+      <div class="kpi-card" style="border-color:var(--amber-solid)">
+        <p class="text-[11.5px] text-slate-500 font-medium">Licitaciones abiertas</p>
+        <p class="text-2xl font-bold mono mt-1" id="kpiAbiertas">0</p>
+      </div>
+      <div class="kpi-card" style="border-color:#64748b">
+        <p class="text-[11.5px] text-slate-500 font-medium">Adendas registradas</p>
+        <p class="text-2xl font-bold mono mt-1" id="kpiAdendas">0</p>
+      </div>
+    </div>
+
+    <div class="card p-4 mb-5">
+      <div class="flex flex-col lg:flex-row gap-3">
+        <input type="text" id="contBuscar" placeholder="Buscar por proyecto, empresa o NIT…" class="lg:max-w-xs">
+        <select id="contInstitucion"><option value="todas">Todas las instituciones</option></select>
+        <select id="contEstado">
+          <option value="todos">Todos los estados</option>
+          <option value="Ejecución">Ejecución</option>
+          <option value="Finalizado">Finalizado</option>
+          <option value="Adjudicado">Adjudicado</option>
+          <option value="En Licitación">En licitación</option>
+        </select>
+        <div class="flex gap-2 lg:ml-auto">
+          <button class="btn-secondary" onclick="exportCSV()">Exportar .CSV</button>
+          <button class="btn-secondary" onclick="exportJSON()">Exportar .JSON</button>
+          <button class="btn-primary" onclick="openContractForm()">+ Registrar contrato</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card overflow-x-auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Proyecto</th><th>Institución</th><th>Empresa adjudicada</th><th>Monto</th><th>Estado</th><th>Adendas</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="contTableBody"></tbody>
+      </table>
+    </div>
+    <p class="text-[12px] text-slate-400 mt-3" id="contCount"></p>
+  </section>
+
+  <!-- ===================== TAB 5 ===================== -->
+  <section id="panel-5" class="panel">
+    <div class="mb-6">
+      <p class="badge badge-blue mb-2 inline-block">Módulo 4</p>
+      <h2 class="text-2xl font-bold text-slate-900">Avance físico vs. avance financiero</h2>
+      <p class="text-slate-600 mt-1 max-w-2xl text-[14.5px]">Detecta el fraude más recurrente: obras liquidadas en papel que no existen en el terreno[cite: 1].</p>
+    </div>
+
+    <div class="card p-6">
+      <p class="hint mb-3">👉 Cambia de obra en el selector para comparar sus indicadores.</p>
+      <select id="obraSelect" class="max-w-md mb-6"></select>
+      <div id="obraAlerta" class="hidden mb-5 p-4 rounded-lg border border-amber-300 bg-amber-50 flex gap-3 items-start">
+        <svg class="w-5 h-5 mt-0.5 flex-shrink-0" style="color:var(--amber)" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008zM12 3l9 16.5H3L12 3z"/></svg>
+        <div>
+          <p class="font-semibold text-sm" style="color:var(--amber)">Alerta de desfase</p>
+          <p class="text-[13px] text-amber-800 mt-0.5" id="obraAlertaTexto"></p>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <div>
+          <div class="flex justify-between text-sm mb-1.5"><span class="font-medium">Avance físico (campo)</span><span class="mono font-semibold" id="fisicoPct">0%</span></div>
+          <div class="bar-track"><div class="bar-fill" id="fisicoBar" style="width:0%; background:var(--green);"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-sm mb-1.5"><span class="font-medium">Avance financiero (desembolsos)</span><span class="mono font-semibold" id="financieroPct">0%</span></div>
+          <div class="bar-track"><div class="bar-fill" id="financieroBar" style="width:0%; background:var(--blue);"></div></div>
+        </div>
+      </div>
+
+      <div class="mt-6 grid sm:grid-cols-3 gap-3" id="obraGaleria"></div>
+    </div>
+  </section>
+
+  <!-- ===================== TAB 6 ===================== -->
+  <section id="panel-6" class="panel">
+    <div class="mb-6">
+      <p class="badge badge-blue mb-2 inline-block">Sección 6</p>
+      <h2 class="text-2xl font-bold text-slate-900">Arquitectura técnica, datos abiertos y seguridad ética</h2>
+      <p class="text-slate-600 mt-1 max-w-2xl text-[14.5px]">El software no debe esconder datos: debe facilitar su análisis independiente[cite: 1].</p>
+    </div>
+
+    <div class="card p-6 mb-6">
+      <h3 class="font-semibold mb-1">Consola de auditoría · logs inmutables</h3>
+      <p class="hint mb-3">👉 Pulsa "Simular nuevo registro" para ver cómo se agrega una acción a la bitácora en tiempo real.</p>
+      <div class="overflow-x-auto">
+        <table>
+          <thead><tr><th>Hash (SHA-256)</th><th>Usuario</th><th>Acción</th><th>Marca de tiempo</th></tr></thead>
+          <tbody id="auditLogsBody"></tbody>
+        </table>
+      </div>
+      <button class="btn-secondary mt-4" onclick="addAuditLog()">Simular nuevo registro</button>
+    </div>
+
+    <div class="card p-6">
+      <h3 class="font-semibold mb-1">Estándar de accesibilidad web (WCAG)</h3>
+      <p class="text-[13px] text-slate-500 mb-4">Selecciona un nivel de conformidad para ver su alcance.</p>
+      <div class="flex gap-2 mb-4" id="wcagToggle">
+        <button data-level="A" class="stage-btn flex-1"><span class="font-semibold text-sm">Nivel A</span></button>
+        <button data-level="AA" class="stage-btn active flex-1"><span class="font-semibold text-sm">Nivel AA</span></button>
+        <button data-level="AAA" class="stage-btn flex-1"><span class="font-semibold text-sm">Nivel AAA</span></button>
+      </div>
+      <div id="wcagContent" class="bg-slate-50 border border-slate-200 rounded-lg p-5 text-[13.5px] text-slate-700"></div>
+    </div>
+  </section>
+
+  <!-- ===================== TAB 7 ===================== -->
+  <section id="panel-7" class="panel">
+    <div class="mb-6">
+      <p class="badge badge-blue mb-2 inline-block">Sección 7</p>
+      <h2 class="text-2xl font-bold text-slate-900">Conclusiones, impacto social y rol del profesional</h2>
+      <p class="text-slate-600 mt-1 max-w-2xl text-[14.5px]">La corrupción prolifera en la oscuridad y en los sistemas desconectados entre sí[cite: 1].</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="kpi-card"><p class="text-[11.5px] text-slate-500 font-medium">Módulos integrados</p><p class="text-2xl font-bold mono mt-1">4</p></div>
+      <div class="kpi-card" style="border-color:var(--green)"><p class="text-[11.5px] text-slate-500 font-medium">Presupuesto fiscalizado</p><p class="text-2xl font-bold mono mt-1" id="impactoPresupuesto">$0</p></div>
+      <div class="kpi-card" style="border-color:var(--amber-solid)"><p class="text-[11.5px] text-slate-500 font-medium">Contratos con competencia abierta</p><p class="text-2xl font-bold mono mt-1" id="impactoCompetencia">0%</p></div>
+      <div class="kpi-card" style="border-color:#64748b"><p class="text-[11.5px] text-slate-500 font-medium">Obras con alerta activa</p><p class="text-2xl font-bold mono mt-1">1</p></div>
+    </div>
+
+    <div class="card p-6 mb-6">
+      <h3 class="font-semibold mb-2">Compromiso profesional</h3>
+      <p class="text-[13.5px] text-slate-600 leading-relaxed">Como futuros profesionales, nuestro código de ética exige anteponer el bienestar colectivo y la veracidad por encima de la conveniencia política o la complicidad del silencio[cite: 1].</p>
+    </div>
+
+    <button class="btn-primary" onclick="openQA()">Abrir espacio de preguntas</button>
+
+    <div class="mt-6 space-y-3" id="qaList"></div>
+  </section>
+
+</main>
+
+<!-- ===== MODAL: FICHA DE PROYECTO CON LÍNEA DE TIEMPO INTERACTIVA ===== -->
+<div class="modal-backdrop" id="modalProyecto">
+  <div class="modal-box p-6" id="modalProyectoBody"></div>
+</div>
+
+<!-- ===== MODAL: EXPEDIENTE DE CONTRATO ===== -->
+<div class="modal-backdrop" id="modalExpediente">
+  <div class="modal-box p-6" id="modalExpedienteBody"></div>
+</div>
+
+<!-- ===== MODAL: REGISTRAR CONTRATO ===== -->
+<div class="modal-backdrop" id="modalForm">
+  <div class="modal-box p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-bold text-lg">Registrar nuevo contrato</h3>
+      <button onclick="closeModal('modalForm')" class="text-slate-400 hover:text-slate-700">✕</button>
+    </div>
+    <form id="contractForm" class="space-y-3">
+      <div>
+        <label class="text-[12.5px] font-medium text-slate-600">Nombre del proyecto</label>
+        <input type="text" id="fNombre" required>
+      </div>
+      <div class="grid sm:grid-cols-2 gap-3">
+        <div>
+          <label class="text-[12.5px] font-medium text-slate-600">Institución</label>
+          <select id="fInstitucion" required>
+            <option>Ministerio de Obras Públicas</option>
+            <option>Ministerio de Educación</option>
+            <option>Ministerio de Salud</option>
+            <option>ANDA</option>
+            <option>Corte de Cuentas</option>
+            <option>Alcaldía de San Miguel</option>
+            <option>Alcaldía de San Salvador</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[12.5px] font-medium text-slate-600">Estado</label>
+          <select id="fEstado" required>
+            <option>En Licitación</option>
+            <option>Adjudicado</option>
+            <option>Ejecución</option>
+            <option>Finalizado</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid sm:grid-cols-2 gap-3">
+        <div>
+          <label class="text-[12.5px] font-medium text-slate-600">Empresa adjudicada</label>
+          <input type="text" id="fEmpresa" required>
+        </div>
+        <div>
+          <label class="text-[12.5px] font-medium text-slate-600">NIT</label>
+          <input type="text" id="fNit" placeholder="0000-000000-000-0" required>
+        </div>
+      </div>
+      <div class="grid sm:grid-cols-2 gap-3">
+        <div>
+          <label class="text-[12.5px] font-medium text-slate-600">Representante legal</label>
+          <input type="text" id="fRepresentante" required>
+        </div>
+        <div>
+          <label class="text-[12.5px] font-medium text-slate-600">Monto (USD)</label>
+          <input type="text" id="fMonto" placeholder="250000" required>
+        </div>
+      </div>
+      <div>
+        <label class="text-[12.5px] font-medium text-slate-600">Código de licitación</label>
+        <input type="text" id="fLicitacion" placeholder="LP-XXX-000-2026" required>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" class="btn-secondary" onclick="closeModal('modalForm')">Cancelar</button>
+        <button type="submit" class="btn-primary">Guardar contrato</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== MODAL: PREGUNTAS ===== -->
+<div class="modal-backdrop" id="modalQA">
+  <div class="modal-box p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-bold text-lg">Espacio de preguntas</h3>
+      <button onclick="closeModal('modalQA')" class="text-slate-400 hover:text-slate-700">✕</button>
+    </div>
+    <form id="qaForm" class="space-y-3">
+      <div>
+        <label class="text-[12.5px] font-medium text-slate-600">Nombre</label>
+        <input type="text" id="qaNombre" required>
+      </div>
+      <div>
+        <label class="text-[12.5px] font-medium text-slate-600">Pregunta o comentario</label>
+        <textarea id="qaTexto" rows="3" required></textarea>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" class="btn-secondary" onclick="closeModal('modalQA')">Cancelar</button>
+        <button type="submit" class="btn-primary">Enviar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div id="toastContainer" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-2 items-end"></div>
+
+<script>
+/* ============ NAVEGACIÓN POR PESTAÑAS ============ */
+const tabs = [
+  { id: 1, label: 'Introducción y Marco Ético' },
+  { id: 2, label: 'Módulo 1: Proyectos Gubernamentales' },
+  { id: 3, label: 'Módulo 2: Presupuesto Público' },
+  { id: 4, label: 'Módulo 3: Contratos y Licitaciones' },
+  { id: 5, label: 'Módulo 4: Avance Físico vs Financiero' },
+  { id: 6, label: 'Arquitectura Técnica y Datos Abiertos' },
+  { id: 7, label: 'Conclusiones e Impacto Profesional' },
+];
+const tabBar = document.getElementById('tabBar');
+tabs.forEach(t => {
+  const btn = document.createElement('button');
+  btn.className = 'tab-btn' + (t.id === 1 ? ' active' : '');
+  btn.dataset.tab = t.id;
+  btn.innerHTML = `<span class="num">${t.id}</span>${t.label}`;
+  btn.onclick = () => switchTab(t.id);
+  tabBar.appendChild(btn);
+});
+let currentTab = 1;
+function switchTab(id) {
+  currentTab = id;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', Number(b.dataset.tab) === id));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + id));
+  document.getElementById('progressLabel').textContent = tabs[id-1].label;
+  document.getElementById('prevTabBtn').disabled = id === 1;
+  document.getElementById('nextTabBtn').textContent = id === tabs.length ? 'Fin ✓' : 'Siguiente →';
+  document.getElementById('nextTabBtn').disabled = id === tabs.length;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+document.getElementById('prevTabBtn').addEventListener('click', () => { if (currentTab > 1) switchTab(currentTab - 1); });
+document.getElementById('nextTabBtn').addEventListener('click', () => { if (currentTab < tabs.length) switchTab(currentTab + 1); });
+switchTab(1);
+
+/* ============ TOASTS ============ */
+function toast(msg, type = 'ok') {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  const icon = type === 'ok'
+    ? '<svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>'
+    : '<svg class="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5v-4.5m0-3.75h.008v.008H12V8.25z"/></svg>';
+  el.innerHTML = icon + `<span>${msg}</span>`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, 3000);
+}
+
+/* ============ MODALES ============ */
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-backdrop').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); });
+});
+
+/* ============ TAB 1: PÚBLICO VS PRIVADO ============ */
+const pubPrivData = {
+  publico: {
+    title: 'Se publica de forma proactiva',
+    items: [
+      'Monto y ejecución de contratos y licitaciones',
+      'Presupuesto votado, modificado, devengado y pagado',
+      'Nombre de instituciones y funcionarios responsables',
+      'Avance físico y financiero de obras públicas',
+    ],
+  },
+  privado: {
+    title: 'Se protege bajo secreto fiscal',
+    items: [
+      'Declaraciones de renta de personas naturales',
+      'Datos financieros internos de empresas privadas',
+      'Información tributaria protegida por el Art. 28 del Código Tributario',
+      'Datos personales sensibles de ciudadanos',
+    ],
+  },
+};
+function renderPubPriv(side) {
+  const d = pubPrivData[side];
+  document.getElementById('pubPrivContent').innerHTML = `
+    <p class="font-semibold text-sm mb-2">${d.title}</p>
+    <ul class="space-y-1.5 text-[13.5px] text-slate-600 list-disc pl-5">
+      ${d.items.map(i => `<li>${i}</li>`).join('')}
+    </ul>`;
+}
+document.getElementById('pubPrivToggle').addEventListener('click', e => {
+  const btn = e.target.closest('button'); if (!btn) return;
+  document.querySelectorAll('#pubPrivToggle button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPubPriv(btn.dataset.side);
+});
+renderPubPriv('publico');
+
+/* ============ TAB 2: PROYECTOS ============ */
+const proyectos = [
+  { 
+    nombre: 'Ampliación Hospital Nacional Rosales', 
+    institucion: 'Ministerio de Salud', 
+    estado: 'Ejecución', 
+    poblacion: '85,000 habitantes', 
+    inicio: '02/2025', 
+    fin: '11/2026', 
+    objetivo: 'Ampliar la capacidad de atención de emergencias y hospitalización.',
+    etapas: [
+      { titulo: 'Fase 1: Estudios de suelo y diseño arquitectónico', planificado: 'Completado en 03/2025', ejecutado: 'Finalizado sin retrasos en 03/2025', status: 'completado' },
+      { titulo: 'Fase 2: Licitación y adjudicación de obra gris', planificado: 'Completado en 06/2025', ejecutado: 'Adjudicado a Constructora Hermes S.A. en 07/2025 (retraso de 1 mes)', status: 'completado' },
+      { titulo: 'Fase 3: Ejecución de estructura principal', planificado: 'Avance programado al 80%', ejecutado: 'Avance real al 65% por escasez temporal de acero', status: 'en-proceso' },
+      { titulo: 'Fase 4: Equipamiento y entrega final', planificado: 'Entrega en 11/2026', ejecutado: 'Estimado para 12/2026 (ajuste de 30 días)', status: 'pendiente' }
+    ]
+  },
+  { 
+    nombre: 'Rehabilitación de 40 escuelas rurales', 
+    institucion: 'Ministerio de Educación', 
+    estado: 'Ejecución', 
+    poblacion: '12,300 estudiantes', 
+    inicio: '01/2025', 
+    fin: '06/2026', 
+    objetivo: 'Mejorar infraestructura educativa en zonas rurales priorizadas.',
+    etapas: [
+      { titulo: 'Fase 1: Diagnóstico de centros escolares', planificado: 'Completado en 02/2025', ejecutado: 'Completado conforme a lo programado', status: 'completado' },
+      { titulo: 'Fase 2: Intercambio de techos y servicios sanitarios', planificado: 'Avance al 100%', ejecutado: 'Avance real al 95%', status: 'en-proceso' },
+      { titulo: 'Fase 3: Entrega oficial a comunidades', planificado: 'Junio 2026', ejecutado: 'En tiempo estimado', status: 'pendiente' }
+    ]
+  },
+  { 
+    nombre: 'Planta de tratamiento de agua potable', 
+    institucion: 'ANDA', 
+    estado: 'Planificación', 
+    poblacion: '60,000 habitantes', 
+    inicio: '03/2026', 
+    fin: '12/2027', 
+    objetivo: 'Garantizar acceso a agua potable en la zona metropolitana oriente.',
+    etapas: [
+      { titulo: 'Fase 1: Factibilidad ambiental y diseño hidráulico', planificado: 'Marzo 2026', ejecutado: 'En revisión de permisos ambientales', status: 'en-proceso' },
+      { titulo: 'Fase 2: Licitación pública internacional', planificado: 'Junio 2026', ejecutado: 'Pendiente de publicación', status: 'pendiente' },
+      { titulo: 'Fase 3: Construcción de planta', planificado: 'Inicio en 2027', ejecutado: 'Pendiente', status: 'pendiente' }
+    ]
+  },
+  { 
+    nombre: 'Modernización de mercados municipales', 
+    institucion: 'Alcaldía de San Miguel', 
+    estado: 'Finalizado', 
+    poblacion: '5,400 comerciantes', 
+    inicio: '05/2023', 
+    fin: '02/2025', 
+    objetivo: 'Renovar infraestructura comercial y sanitaria de mercados públicos.',
+    etapas: [
+      { titulo: 'Fase 1: Reubicación temporal de comerciantes', planificado: 'Completado', ejecutado: 'Completado a satisfacción', status: 'completado' },
+      { titulo: 'Fase 2: Construcción de módulos nuevos', planificado: 'Completado', ejecutado: 'Completado', status: 'completado' },
+      { titulo: 'Fase 3: Inauguración y entrega de puestos', planificado: 'Febrero 2025', ejecutado: 'Entregado oficialmente el 15/02/2025', status: 'completado' }
+    ]
+  },
+  { 
+    nombre: 'Programa de vivienda social', 
+    institucion: 'Ministerio de Vivienda', 
+    estado: 'Ejecución', 
+    poblacion: '900 familias', 
+    inicio: '08/2024', 
+    fin: '08/2026', 
+    objetivo: 'Dotar de vivienda digna a familias en situación de vulnerabilidad.',
+    etapas: [
+      { titulo: 'Fase 1: Selección de beneficiarios', planificado: 'Completado', ejecutado: 'Completado', status: 'completado' },
+      { titulo: 'Fase 2: Urbanización y fundaciones', planificado: 'Completado', ejecutado: 'Completado', status: 'completado' },
+      { titulo: 'Fase 3: Construcción de viviendas modulares', planificado: 'Avance al 90%', ejecutado: 'Avance real al 88%', status: 'en-proceso' }
+    ]
+  },
+  { 
+    nombre: 'Digitalización del Registro Nacional', 
+    institucion: 'RNPN', 
+    estado: 'Planificación', 
+    poblacion: 'Nacional', 
+    inicio: '01/2026', 
+    fin: '01/2028', 
+    objetivo: 'Migrar los registros civiles a un sistema digital auditable.',
+    etapas: [
+      { titulo: 'Fase 1: Arquitectura de software y seguridad', planificado: 'Enero 2026', ejecutado: 'En desarrollo de prototipos', status: 'en-proceso' },
+      { titulo: 'Fase 2: Digitalización de libros físicos', planificado: 'Mediados 2026', ejecutado: 'Pendiente', status: 'pendiente' }
+    ]
+  }
+];
+
+function estadoBadge(e) {
+  if (e === 'Ejecución') return 'badge-blue';
+  if (e === 'Finalizado') return 'badge-green';
+  return 'badge-amber';
+}
+
+function renderProyectos() {
+  const q = document.getElementById('proyBuscar').value.toLowerCase();
+  const f = document.getElementById('proyFiltro').value;
+  const grid = document.getElementById('proyGrid');
+  const list = proyectos.filter(p =>
+    (f === 'todos' || p.estado === f) &&
+    (p.nombre.toLowerCase().includes(q) || p.institucion.toLowerCase().includes(q))
+  );
+  grid.innerHTML = list.map((p) => `
+    <button onclick="openProyecto(${proyectos.indexOf(p)})" class="card p-5 text-left hover:shadow-md hover:border-blue-300 transition cursor-pointer">
+      <span class="badge ${estadoBadge(p.estado)} mb-3 inline-block">${p.estado}</span>
+      <h3 class="font-semibold text-[14.5px] leading-snug mb-1">${p.nombre}</h3>
+      <p class="text-[12.5px] text-slate-500">${p.institucion}</p>
+      <p class="text-[12px] text-slate-400 mt-3">👥 ${p.poblacion}</p>
+      <p class="text-[11.5px] text-blue-600 font-medium mt-3 flex items-center gap-1">Ver etapas interactivas →</p>
+    </button>`).join('') || `<p class="text-slate-400 text-sm col-span-full py-10 text-center">No se encontraron proyectos con ese criterio.</p>`;
+}
+
+function openProyecto(i) {
+  const p = proyectos[i];
+  document.getElementById('modalProyectoBody').innerHTML = `
+    <div class="flex items-center justify-between mb-3">
+      <span class="badge ${estadoBadge(p.estado)}">${p.estado}</span>
+      <button onclick="closeModal('modalProyecto')" class="text-slate-400 hover:text-slate-700">✕</button>
+    </div>
+    <h3 class="font-bold text-lg mb-1">${p.nombre}</h3>
+    <p class="text-[13px] text-slate-500 mb-2">Institución: <strong>${p.institucion}</strong></p>
+    <p class="text-[13.5px] text-slate-700 bg-blue-50/60 p-3 rounded-lg border border-blue-100 mb-4"><strong>Objetivo:</strong> ${p.objetivo}</p>
+    
+    <div class="grid grid-cols-2 gap-3 text-[13px] mb-5">
+      <div class="bg-slate-50 rounded-lg p-3"><p class="text-slate-500 text-[11.5px]">Población beneficiada</p><p class="font-medium mono">${p.poblacion}</p></div>
+      <div class="bg-slate-50 rounded-lg p-3"><p class="text-slate-500 text-[11.5px]">Cronograma Oficial</p><p class="font-medium mono">${p.inicio} → ${p.fin}</p></div>
+    </div>
+
+    <h4 class="font-semibold text-sm mb-3 text-slate-900 border-b pb-2">Línea de tiempo y seguimiento de etapas (Planificado vs Ejecutado)</h4>
+    <div class="space-y-4">
+      ${p.etapas.map((et) => `
+        <div class="border border-slate-200 rounded-lg p-3 bg-white shadow-sm">
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-semibold text-[13px] text-slate-800">${et.titulo}</span>
+            <span class="badge ${et.status === 'completado' ? 'badge-green' : et.status === 'en-proceso' ? 'badge-blue' : 'badge-amber'}">${et.status.toUpperCase()}</span>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-2 mt-2 text-[12.5px]">
+            <div class="bg-slate-50 p-2 rounded border border-slate-100">
+              <span class="text-slate-400 block text-[11px]">📅 Planificado:</span>
+              <strong class="text-slate-700">${et.planificado}</strong>
+            </div>
+            <div class="bg-blue-50/50 p-2 rounded border border-blue-100">
+              <span class="text-blue-500 block text-[11px]">⚡ Ejecución real:</span>
+              <strong class="text-blue-900">${et.ejecutado}</strong>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  openModal('modalProyecto');
+}
+
+document.getElementById('proyBuscar').addEventListener('input', renderProyectos);
+document.getElementById('proyFiltro').addEventListener('change', renderProyectos);
+renderProyectos();
+
+/* ============ TAB 3: CICLO PRESUPUESTARIO ============ */
+const budgetStages = [
+  { key: 'votado', label: 'Votado', monto: 5000000, desc: 'Monto total aprobado por la Asamblea Legislativa para el ejercicio fiscal.', color: '#64748b' },
+  { key: 'modificado', label: 'Modificado', monto: 5250000, desc: 'Ajustes por transferencias y reorientaciones entre partidas institucionales.', color: 'var(--blue)' },
+  { key: 'devengado', label: 'Devengado', monto: 3800000, desc: 'Obligaciones contraídas contra bienes o servicios efectivamente recibidos.', color: 'var(--amber-solid)' },
+  { key: 'pagado', label: 'Pagado', monto: 3100000, desc: 'Desembolsos efectivos realizados por el Estado hasta la fecha.', color: 'var(--green)' },
+];
+const stageWrap = document.getElementById('budgetStages');
+budgetStages.forEach((s, i) => {
+  const b = document.createElement('button');
+  b.className = 'stage-btn' + (i === 0 ? ' active' : '');
+  b.dataset.key = s.key;
+  b.innerHTML = `<span class="font-semibold text-sm">${s.label}</span><p class="mono text-[12.5px] text-slate-500 mt-0.5">$${s.monto.toLocaleString()}</p>`;
+  b.onclick = () => { document.querySelectorAll('#budgetStages button').forEach(x => x.classList.remove('active')); b.classList.add('active'); renderBudgetDetail(s.key); };
+  stageWrap.appendChild(b);
+});
+function renderBudgetDetail(key) {
+  const s = budgetStages.find(x => x.key === key);
+  const pct = Math.round((s.monto / budgetStages[0].monto) * 100);
+  document.getElementById('budgetDetail').innerHTML = `
+    <p class="text-[13.5px] text-slate-600 mb-3">${s.desc}</p>
+    <div class="flex justify-between text-sm mb-1.5"><span class="font-medium">% respecto al presupuesto votado</span><span class="mono font-semibold">${pct}%</span></div>
+    <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:${s.color};"></div></div>`;
+}
+renderBudgetDetail('votado');
+
+/* ============ TAB 4: CONTRATOS ============ */
+let contratos = [
+  { nombre: 'Construcción de puente vehicular Río Grande', institucion: 'Ministerio de Obras Públicas', empresa: 'Constructora Hermes S.A. de C.V.', nit: '0614-120385-102-3', representante: 'Carlos Alberto Ramírez', monto: 1250000, estado: 'Ejecución', licitacion: 'LP-MOP-014-2025', adendas: 1 },
+  { nombre: 'Suministro de mobiliario escolar', institucion: 'Ministerio de Educación', empresa: 'Distribuidora Escolar CENTRA S.A.', nit: '0211-050290-101-7', representante: 'Marta Elena Sosa', monto: 340500, estado: 'Finalizado', licitacion: 'LP-MINED-007-2024', adendas: 0 },
+  { nombre: 'Mantenimiento vial zona oriental', institucion: 'Alcaldía de San Miguel', empresa: 'Vías y Asfaltos del Oriente S.A. de C.V.', nit: '1305-230188-103-5', representante: 'José Antonio Portillo', monto: 780000, estado: 'Ejecución', licitacion: 'LP-ASM-003-2025', adendas: 1 },
+  { nombre: 'Sistema de agua potable rural', institucion: 'ANDA', empresa: 'Hidroconstrucciones Cuscatlán S.A.', nit: '0614-090492-104-1', representante: 'Rosa Idalia Meléndez', monto: 2100000, estado: 'Ejecución', licitacion: 'LP-ANDA-021-2025', adendas: 0 },
+  { nombre: 'Auditoría externa financiera 2025', institucion: 'Corte de Cuentas', empresa: 'Consultores & Asociados López S.A.', nit: '0614-151075-105-9', representante: 'Fernando López Rivas', monto: 95000, estado: 'Adjudicado', licitacion: 'LP-CCR-002-2026', adendas: 0 },
+  { nombre: 'Modernización tecnológica hospitalaria', institucion: 'Ministerio de Salud', empresa: 'TecnoSalud Soluciones S.A. de C.V.', nit: '0614-300980-106-2', representante: 'Ana Gabriela Chávez', monto: 1480000, estado: 'En Licitación', licitacion: 'LP-MINSAL-030-2026', adendas: 0 },
+  { nombre: 'Ampliación Carretera Litoral, tramo III', institucion: 'Ministerio de Obras Públicas', empresa: 'Ingeniería y Pavimentos del Pacífico S.A.', nit: '0614-220677-107-4', representante: 'Ricardo Ernesto Guevara', monto: 3250000, estado: 'Ejecución', licitacion: 'LP-MOP-041-2025', adendas: 2 },
+  { nombre: 'Centro de Cuido Infantil Municipal', institucion: 'Alcaldía de San Salvador', empresa: 'Constructora Alba S.A. de C.V.', nit: '0614-101288-108-6', representante: 'Silvia Patricia Núñez', monto: 210000, estado: 'Finalizado', licitacion: 'LP-ASS-011-2023', adendas: 0 },
+  { nombre: 'Red de Internet Comunitario Rural', institucion: 'Ministerio de Economía', empresa: 'Conectividad Nacional S.A. de C.V.', nit: '0614-050895-109-8', representante: 'Douglas Alexander Peña', monto: 640000, estado: 'En Licitación', licitacion: 'LP-MINEC-006-2026', adendas: 0 },
+];
+function populateInstituciones() {
+  const sel = document.getElementById('contInstitucion');
+  const unique = [...new Set(contratos.map(c => c.institucion))];
+  sel.innerHTML = '<option value="todas">Todas las instituciones</option>' + unique.map(i => `<option value="${i}">${i}</option>`).join('');
+}
+function estadoContratoBadge(e) {
+  if (e === 'Ejecución') return 'badge-blue';
+  if (e === 'Finalizado') return 'badge-green';
+  if (e === 'Adjudicado') return 'badge-gray';
+  return 'badge-amber';
+}
+function filteredContratos() {
+  const q = document.getElementById('contBuscar').value.toLowerCase();
+  const inst = document.getElementById('contInstitucion').value;
+  const est = document.getElementById('contEstado').value;
+  return contratos.filter(c =>
+    (inst === 'todas' || c.institucion === inst) &&
+    (est === 'todos' || c.estado === est) &&
+    (c.nombre.toLowerCase().includes(q) || c.empresa.toLowerCase().includes(q) || c.nit.includes(q))
+  );
+}
+function renderContratos() {
+  const list = filteredContratos();
+  document.getElementById('contTableBody').innerHTML = list.map(c => `
+    <tr>
+      <td class="font-medium">${c.nombre}</td>
+      <td class="text-slate-500">${c.institucion}</td>
+      <td>${c.empresa}</td>
+      <td class="mono">$${c.monto.toLocaleString()}</td>
+      <td><span class="badge ${estadoContratoBadge(c.estado)}">${c.estado}</span></td>
+      <td class="mono text-center">${c.adendas}</td>
+      <td><button onclick="openExpediente('${c.licitacion}')" class="text-blue-600 font-semibold text-[12.5px] hover:underline cursor-pointer">Ver expediente</button></td>
+    </tr>`).join('') || `<tr><td colspan="7" class="text-center text-slate-400 py-8">No hay contratos que coincidan con el filtro.</td></tr>`;
+  document.getElementById('contCount').textContent = `Mostrando ${list.length} de ${contratos.length} contratos registrados.`;
+  updateKPIs();
+}
+function updateKPIs() {
+  document.getElementById('kpiActivos').textContent = contratos.filter(c => c.estado === 'Ejecución').length;
+  document.getElementById('kpiTotal').textContent = '$' + contratos.reduce((s, c) => s + c.monto, 0).toLocaleString();
+  document.getElementById('kpiAbiertas').textContent = contratos.filter(c => c.estado === 'En Licitación').length;
+  document.getElementById('kpiAdendas').textContent = contratos.reduce((s, c) => s + c.adendas, 0);
+  const presTotal = contratos.reduce((s, c) => s + c.monto, 0);
+  document.getElementById('impactoPresupuesto').textContent = '$' + presTotal.toLocaleString();
+  const compAbierta = Math.round((contratos.filter(c => c.estado !== 'Adjudicado').length / contratos.length) * 100);
+  document.getElementById('impactoCompetencia').textContent = compAbierta + '%';
+}
+['contBuscar','contInstitucion','contEstado'].forEach(id => {
+  document.getElementById(id).addEventListener('input', renderContratos);
+  document.getElementById(id).addEventListener('change', renderContratos);
+});
+
+function openExpediente(licitacion) {
+  const c = contratos.find(x => x.licitacion === licitacion);
+  const pasos = [
+    { t: 'Publicación de bases de licitación', d: 'Bases técnicas y criterios de evaluación publicados en el portal.' },
+    { t: 'Apertura de ofertas', d: 'Acta de apertura registrada con las empresas participantes.' },
+    { t: 'Adjudicación', d: `Contrato adjudicado a ${c.empresa}.` },
+  ];
+  if (c.adendas > 0) pasos.push({ t: `${c.adendas} adenda(s) registrada(s)`, d: 'Ampliación de monto o plazo documentada y justificada.' });
+  pasos.push({ t: c.estado === 'Finalizado' ? 'Contrato finalizado' : c.estado === 'Ejecución' ? 'En ejecución' : 'Pendiente de firma', d: 'Estado actual del proceso contractual.' });
+
+  document.getElementById('modalExpedienteBody').innerHTML = `
+    <div class="flex items-center justify-between mb-4">
+      <span class="badge ${estadoContratoBadge(c.estado)}">${c.estado}</span>
+      <button onclick="closeModal('modalExpediente')" class="text-slate-400 hover:text-slate-700">✕</button>
+    </div>
+    <h3 class="font-bold text-lg mb-1">${c.nombre}</h3>
+    <p class="text-[13px] text-slate-500 mb-4">Licitación ${c.licitacion} · ${c.institucion}</p>
+
+    <div class="grid sm:grid-cols-2 gap-3 mb-5 text-[13px]">
+      <div class="bg-slate-50 rounded-lg p-3"><p class="text-slate-500 text-[11.5px]">Empresa adjudicada</p><p class="font-medium">${c.empresa}</p></div>
+      <div class="bg-slate-50 rounded-lg p-3"><p class="text-slate-500 text-[11.5px]">NIT</p><p class="font-medium mono">${c.nit}</p></div>
+      <div class="bg-slate-50 rounded-lg p-3"><p class="text-slate-500 text-[11.5px]">Representante legal</p><p class="font-medium">${c.representante}</p></div>
+      <div class="bg-slate-50 rounded-lg p-3"><p class="text-slate-500 text-[11.5px]">Monto contractual</p><p class="font-medium mono">$${c.monto.toLocaleString()}</p></div>
+    </div>
+
+    <h4 class="font-semibold text-sm mb-3">Cronología del proceso</h4>
+    <div class="mb-5">${pasos.map(p => `<div class="timeline-item"><p class="font-medium text-[13.5px]">${p.t}</p><p class="text-[12.5px] text-slate-500">${p.d}</p></div>`).join('')}</div>
+
+    <h4 class="font-semibold text-sm mb-3">Documentos del expediente</h4>
+    <div class="space-y-2">
+      ${['Bases de licitación.pdf','Acta de apertura de ofertas.pdf','Contrato íntegro formalizado.pdf'].map(doc => `
+        <div class="flex items-center justify-between border border-slate-200 rounded-lg px-3 py-2.5">
+          <span class="text-[13px] flex items-center gap-2"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>${doc}</span>
+          <button onclick="toast('Descargando ${doc}…')" class="text-blue-600 font-semibold text-[12px] hover:underline cursor-pointer">Descargar</button>
+        </div>`).join('')}
+    </div>`;
+  openModal('modalExpediente');
+}
+
+function openContractForm() { openModal('modalForm'); }
+document.getElementById('contractForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const monto = parseFloat(document.getElementById('fMonto').value) || 0;
+  contratos.push({
+    nombre: document.getElementById('fNombre').value,
+    institucion: document.getElementById('fInstitucion').value,
+    empresa: document.getElementById('fEmpresa').value,
+    nit: document.getElementById('fNit').value,
+    representante: document.getElementById('fRepresentante').value,
+    monto, estado: document.getElementById('fEstado').value,
+    licitacion: document.getElementById('fLicitacion').value,
+    adendas: 0,
+  });
+  e.target.reset();
+  closeModal('modalForm');
+  populateInstituciones();
+  renderContratos();
+  toast('Contrato registrado correctamente.');
+});
+
+function toCSV(list) {
+  const headers = ['Nombre','Institucion','Empresa','NIT','Representante','Monto','Estado','Licitacion','Adendas'];
+  const rows = list.map(c => [c.nombre, c.institucion, c.empresa, c.nit, c.representante, c.monto, c.estado, c.licitacion, c.adendas]
+    .map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+  return [headers.join(','), ...rows].join('\n');
+}
+function downloadBlob(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+function exportCSV() { downloadBlob(toCSV(filteredContratos()), 'contratos_publicos.csv', 'text/csv'); toast('Archivo .CSV generado.'); }
+function exportJSON() { downloadBlob(JSON.stringify(filteredContratos(), null, 2), 'contratos_publicos.json', 'application/json'); toast('Archivo .JSON generado.'); }
+
+populateInstituciones();
+renderContratos();
+
+/* ============ TAB 5: FÍSICO VS FINANCIERO ============ */
+const obras = [
+  { nombre: 'Puente vehicular Río Grande', fisico: 30, financiero: 90, fotos: ['🏗️','📐','📷'] },
+  { nombre: 'Escuela rural Cantón El Rosario', fisico: 65, financiero: 70, fotos: ['🏫','🧱','📷'] },
+  { nombre: 'Sistema de agua potable rural', fisico: 45, financiero: 50, fotos: ['🚰','🔧','📷'] },
+  { nombre: 'Ampliación Carretera Litoral, tramo III', fisico: 55, financiero: 62, fotos: ['🚧','🛣️','📷'] },
+  { nombre: 'Centro de Cuido Infantil Municipal', fisico: 100, financiero: 100, fotos: ['🏫','🎨','📷'] },
+];
+const obraSelect = document.getElementById('obraSelect');
+obraSelect.innerHTML = obras.map((o, i) => `<option value="${i}">${o.nombre}</option>`).join('');
+function renderObra(i) {
+  const o = obras[i];
+  document.getElementById('fisicoPct').textContent = o.fisico + '%';
+  document.getElementById('fisicoBar').style.width = o.fisico + '%';
+  document.getElementById('financieroPct').textContent = o.financiero + '%';
+  document.getElementById('financieroBar').style.width = o.financiero + '%';
+  const gap = o.financiero - o.fisico;
+  const alerta = document.getElementById('obraAlerta');
+  if (gap >= 20) {
+    alerta.classList.remove('hidden');
+    document.getElementById('obraAlertaTexto').textContent = `Brecha de ${gap} puntos entre lo pagado y lo construido. Riesgo de pago anticipado de una obra inconclusa.`;
+  } else {
+    alerta.classList.add('hidden');
+  }
+  document.getElementById('obraGaleria').innerHTML = o.fotos.map(f => `
+    <div class="aspect-video rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center text-3xl">${f}</div>`).join('');
+}
+obraSelect.addEventListener('change', e => renderObra(Number(e.target.value)));
+renderObra(0);
+
+/* ============ TAB 6: AUDITORÍA Y WCAG ============ */
+function fakeHash() {
+  const chars = '0123456789abcdef';
+  let h = '';
+  for (let i = 0; i < 64; i++) h += chars[Math.floor(Math.random() * 16)];
+  return h;
+}
+let auditLogs = [
+  { hash: fakeHash(), usuario: 'auditor.lopez', accion: 'Consulta de contrato LP-MOP-014-2025', fecha: '2026-09-10 09:14' },
+  { hash: fakeHash(), usuario: 'admin.hacienda', accion: 'Registro de partida presupuestaria', fecha: '2026-09-11 14:02' },
+  { hash: fakeHash(), usuario: 'inspector.campo', accion: 'Carga de acta de avance físico', fecha: '2026-09-12 08:47' },
+  { hash: fakeHash(), usuario: 'ciudadano.anon', accion: 'Descarga de dataset CSV', fecha: '2026-09-13 19:20' },
+  { hash: fakeHash(), usuario: 'periodista.morales', accion: 'Consulta cruzada contrato vs. avance de obra', fecha: '2026-09-14 11:35' },
+  { hash: fakeHash(), usuario: 'admin.mop', accion: 'Registro de adenda LP-MOP-041-2025', fecha: '2026-09-15 16:58' },
+  { hash: fakeHash(), usuario: 'corte.cuentas', accion: 'Exportación de expediente para auditoría externa', fecha: '2026-09-16 10:03' },
+];
+function renderAuditLogs() {
+  document.getElementById('auditLogsBody').innerHTML = auditLogs.map(l => `
+    <tr>
+      <td class="mono text-[11.5px] text-slate-500">${l.hash.slice(0,16)}…</td>
+      <td>${l.usuario}</td>
+      <td class="text-slate-600">${l.accion}</td>
+      <td class="mono text-[12px] text-slate-500">${l.fecha}</td>
+    </tr>`).join('');
+}
+function addAuditLog() {
+  auditLogs.unshift({ hash: fakeHash(), usuario: 'sistema.auto', accion: 'Verificación de integridad programada', fecha: new Date().toISOString().slice(0,16).replace('T',' ') });
+  renderAuditLogs();
+  toast('Nuevo registro de auditoría generado.');
+}
+renderAuditLogs();
+
+const wcagData = {
+  A: 'Nivel mínimo: contenido alternativo para imágenes, navegación por teclado básica y estructura semántica del HTML.',
+  AA: 'Nivel exigido para plataformas de gobierno abierto: contraste de color adecuado, texto redimensionable y compatibilidad con lectores de pantalla en todos los módulos.',
+  AAA: 'Nivel más estricto: lenguaje de señas para contenido multimedia, contraste reforzado y ayuda contextual avanzada en formularios complejos.',
+};
+document.getElementById('wcagToggle').addEventListener('click', e => {
+  const btn = e.target.closest('button'); if (!btn) return;
+  document.querySelectorAll('#wcagToggle button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('wcagContent').textContent = wcagData[btn.dataset.level];
+});
+document.getElementById('wcagContent').textContent = wcagData.AA;
+
+/* ============ TAB 7: PREGUNTAS ============ */
+function openQA() { openModal('modalQA'); }
+document.getElementById('qaForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const nombre = document.getElementById('qaNombre').value;
+  const texto = document.getElementById('qaTexto').value;
+  const item = document.createElement('div');
+  item.className = 'card p-4';
+  item.innerHTML = `<p class="font-semibold text-[13.5px]">${nombre}</p><p class="text-[13px] text-slate-600 mt-1">${texto}</p>`;
+  document.getElementById('qaList').prepend(item);
+  e.target.reset();
+  closeModal('modalQA');
+  toast('Pregunta registrada.');
+});
+</script>
+</body>
+</html>
